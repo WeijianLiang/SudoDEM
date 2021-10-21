@@ -1,12 +1,12 @@
 #include <Python.h>
 #include <iostream>
-
+#include <sstream>
 #include <stdexcept>
 #include <boost/filesystem/exception.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 
-#include <boost/process/search_path.hpp>
+// #include <boost/process/search_path.hpp>
 
 //#include <omp.h>
 
@@ -47,25 +47,42 @@ int main( int argc, char **argv )
       std::vector<boost::filesystem::path> searchpath;
       searchpath.push_back(filesystem::initial_path<filesystem::path>());
       //std::string currentpath = filesystem::initial_path<filesystem::path>().string();//current path at the terminal
-      exePath = boost::process::search_path(filesystem::path(exeName), searchpath);//first search the current path
-      //cout<<"exepath"<<exePath<<endl;
-      if(exePath.empty()){
-        //cout<<"searching the PATH."<<endl;
-        exePath = boost::process::search_path(filesystem::path(exeName));
-      }
-      //filesystem::path exePath = filesystem::system_complete(filesystem::path(exeName));
-      std::string prefix= (exePath.branch_path().string())+"/../'";
+      // exePath = boost::process::search_path(filesystem::path(exeName), searchpath);//first search the current path
+      // //cout<<"exepath"<<exePath<<endl;
+      // if(exePath.empty()){
+      //   //cout<<"searching the PATH."<<endl;
+      //   exePath = boost::process::search_path(filesystem::path(exeName));
+      // }
+      filesystem::path exePath = filesystem::system_complete(filesystem::path(exeName));
+      //std::cout << "exePath " <<exePath <<"\n";
+      std::string prefix= (exePath.branch_path().string())+"/../";
+      //std::cout << "prefix " <<prefix <<"\n";
+
       std::string newPathValue = origPathValue + ":" + (exePath.branch_path().string());
+
+      //std::cout <<"newPathValue " <<newPathValue<<"\n";
       std::string libPathValue = (exePath.branch_path().string()) + "/../lib/sudodem/";
+      //std::cout <<"libPathValue " <<libPathValue<<"\n";
       libPathValue = libPathValue + ":" + (exePath.branch_path().string()) + "/../lib/sudodem/py";
       libPathValue = libPathValue + ":" + (exePath.branch_path().string()) + "/../lib/3rdlibs/py";
+
+
+      //std::cout <<"libPathValue2 " <<libPathValue<<"\n";
       std::string libLDPathValue = (exePath.branch_path().string()) + "/../lib/3rdlibs/";
+      //std::cout <<"libPathValue3 " <<libPathValue<<"\n";
+
       //cout<<"the path = "<<exePath.string()<<endl;
       setenv("PATH", newPathValue.c_str(), 1);
       setenv("PYTHONPATH",libPathValue.c_str(),1);
       setenv("LD_LIBRARY_PATH",libLDPathValue.c_str(),1);
       setenv("SUDODEM_PREFIX",prefix.c_str(),1);
-      //cout<<"updated PATH="<<newPathValue<<endl;
+
+
+      // std::cout << "PATH" << newPathValue.c_str() << "\n\n";
+      // std::cout << "PYTHONPATH" << libPathValue.c_str()<< "\n\n";
+      // std::cout << "LD_LIBRARY_PATH" << libLDPathValue.c_str() << "\n\n";
+      // std::cout << "SUDODEM_PREFIX" << prefix.c_str() << "\n\n";
+      // cout<<"updated PATH="<<newPathValue<<endl;
     }
   }
   //options

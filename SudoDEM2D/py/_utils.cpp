@@ -166,6 +166,8 @@ Matrix2r Shop__getFabricTensorPO2D(){
 }
 
 
+
+
 #ifdef SUDODEM_OPENGL
 /*#include<sudodem/lib/opengl/OpenGLWrapper.hpp>
 #include<sudodem/gui/qt4/OpenGLManager.hpp>
@@ -191,6 +193,8 @@ BOOST_PYTHON_MODULE(_utils){
 	py::def("getFabricTensorPO2D",Shop__getFabricTensorPO2D,"Fabric tensor of particle orientation along the rx axis.");
 	py::def("getStressAndTangent2D",Shop__getStressAndTangent2D,(py::args("z_dim")=1,py::args("symmetry")=true),"Compute overall stress of periodic cell using the same equation as function getStress. In addition, the tangent operator is calculated using the equation published in [Kruyt and Rothenburg1998]_:\n\n.. math:: S_{ijkl}=\\frac{1}{V}\\sum_{c}(k_n n_i l_j n_k l_l + k_t t_i l_j t_k l_l)\n\n:param float volume: same as in function getStress\n:param bool symmetry: make the tensors symmetric.\n\n:return: macroscopic stress tensor and tangent operator as py::tuple");
 	py::def("getStressTangentThermal2D",Shop__getStressTangentThermal2D,(py::args("z_dim")=1,py::args("symmetry")=true),"Compute overall stress of periodic cell using the same equation as function getStress. In addition, the tangent operator is calculated using the equation published in [Kruyt and Rothenburg1998]_:\n\n.. math:: S_{ijkl}=\\frac{1}{V}\\sum_{c}(k_n n_i l_j n_k l_l + k_t t_i l_j t_k l_l)\n\n:param float volume: same as in function getStress\n:param bool symmetry: make the tensors symmetric. Finally, the thermal conductivity tensor is calculated based on the formular in PFC.\n\n:return: macroscopic stress tensor and tangent operator as py::tuple");
+	py::def("flipCell",&Shop::flipCell,(py::arg("flip")=Matrix2r(Matrix2r::Zero())),"Flip periodic cell so that angles between $R^3$ axes and transformed axes are as small as possible. This function relies on the fact that periodic cell defines by repetition or its corners regular grid of points in $R^3$; however, all cells generating identical grid are equivalent and can be flipped one over another. This necessiatates adjustment of :yref:`Interaction.cellDist` for interactions that cross boundary and didn't before (or vice versa), and re-initialization of collider. The *flip* argument can be used to specify desired flip: integers, each column for one axis; if zero matrix, best fit (minimizing the angles) is computed automatically.\n\nIn c++, this function is accessible as ``Shop::flipCell``.");
+
 	#ifdef SUDODEM_OPENGL
 	//py::def("SaveSnapshot",SaveSnapshot,"TODO");
 	#endif

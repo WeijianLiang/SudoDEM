@@ -35,6 +35,40 @@
 
 
 CREATE_LOGGER(Shop);
+/*! Flip periodic cell for shearing indefinitely.*/
+Matrix2r Shop::flipCell(const Matrix2r& _flip){
+	Scene* scene=Omega::instance().getScene().get(); const shared_ptr<Cell>& cell(scene->cell);
+	Matrix2r& hSize = cell->hSize;
+	Matrix2r flip;
+	if(_flip==Matrix2r::Zero()){
+		bool hasNonzero=false;
+		for(int i=0; i<2; i++) for(int j=0; j<2; j++) {
+			if(i==j){ flip(i,j)=0; continue; }
+			flip(i,j)=-floor(hSize.col(j).dot(hSize.col(i))/hSize.col(i).dot(hSize.col(i)));
+			if(flip(i,j)!=0) hasNonzero=true;
+		}
+		if(!hasNonzero) {LOG_TRACE("No flip necessary."); return Matrix2r::Zero();}
+	} else {
+		flip=_flip;
+	}
+	Matrix2r flipFloat = flip;
+	cell->hSize+=cell->hSize*flipFloat;
+	cell->postLoad(*cell);
+
+ 	// adjust Interaction::cellDist for interactions;
+	Matrix2r invFlip = (Matrix2r::Identity() + flipFloat).inverse();
+	// FIXME: is Matrix3i.cast<Real>().cast<int>() really preserving the integer numbers?? problem: there is no inverse() for Matrix3i, even though in this case the inverse _seems_ to be always an integer matrix
+	FOREACH(const shared_ptr<Interaction>& i, *scene->interactions) i->cellDist = invFlip.cast<int>()*i->cellDist;
+
+	// force reinitialization of the collider
+	bool colliderFound=false;
+	FOREACH(const shared_ptr<Engine>& e, scene->engines){
+		Collider* c=dynamic_cast<Collider*>(e.get());
+		if(c){ colliderFound=true; c->invalidatePersistentData(); }
+	}
+	if(!colliderFound) LOG_WARN("No collider found while flipping cell; continuing simulation might give garbage results.");
+	return flipFloat;
+}
 
 Real Shop::unbalancedForce(bool useMaxForce, Scene* _rb){
 	Scene* rb=_rb ? _rb : Omega::instance().getScene().get();

@@ -25,7 +25,7 @@ execute_process(COMMAND ${LSB_RELEASE_EXEC} -is
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-OPTION(CLUSTER "Compilation on a cluster" ON)
+OPTION(CLUSTER "Compilation on a cluster"  OFF)
 IF ( ${LSB_RELEASE_ID_SHORT} MATCHES "Ubuntu")
   SET(CLUSTER OFF)
 ENDIF ( ${LSB_RELEASE_ID_SHORT} MATCHES "Ubuntu")
@@ -111,22 +111,23 @@ ENDIF (CMAKE_CXX_FLAGS)
 #===========================================================
 # Add possibility to use local boost installation (e.g. -DLocalBoost=1.46.1)
 #set(CMAKE_MODULE_PATH "/scratch/softwares/boostinstall/lib/;${CMAKE_MODULE_PATH}")
-set(Boost_NO_SYSTEM_PATHS TRUE)
+set(Boost_NO_SYSTEM_PATHS FALSE)
 #if (Boost_NO_SYSTEM_PATHS)
 IF (CLUSTER)
   set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../libsinstall")
 ELSE (CLUSTER)
-  set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../3rdlib/boost167")
+  set(BOOST_ROOT "${BOOST_ROOT}")
 ENDIF (CLUSTER)
   #set(BOOST_ROOT "/tmp/project/")
   set(BOOST_INCLUDE_DIRS "${BOOST_ROOT}/include")
   set(BOOST_LIBRARY_DIRS "${BOOST_ROOT}/lib")
   #set(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib")
   #set(BOOST_LIBRARYDIR "/opt/SudoDEM/lib/3rdlibs/")
-
-
 #endif (Boost_NO_SYSTEM_PATHS)
-FIND_PACKAGE(Boost 1.67 COMPONENTS python27 thread filesystem iostreams regex serialization system date_time REQUIRED)
+# FIND_PACKAGE(Boost ${LocalBoost} COMPONENTS python thread filesystem iostreams regex serialization system date_time REQUIRED)
+# INCLUDE_DIRECTORIES (${Boost_INCLUDE_DIRS})
+
+FIND_PACKAGE(Boost 1.58 COMPONENTS python thread filesystem iostreams regex serialization system date_time REQUIRED)
 #FIND_PACKAGE(Boost COMPONENTS python thread filesystem iostreams regex serialization system date_time REQUIRED PATHS ${BOOST_LIBRARYDIR} NO_DEFAULT_PATH)
 
 #set(Boost_LIBRARIES "-lboost_python -lboost_thread -lboost_filesystem -lboost_iostreams -lboost_regex -lboost_serialization -lboost_system -lboost_date_time -lpthread") #"/home/sway/software/DEM/3rdlib/boost159/lib/libboost_python.so/home/sway/software/DEM/3rdlib/boost159/lib/libboost_thread.so/home/sway/software/DEM/3rdlib/boost159/lib/libboost_filesystem.so/home/sway/software/DEM/3rdlib/boost159/lib/libboost_iostreams.so/home/sway/software/DEM/3rdlib/boost159/lib/libboost_regex.so/home/sway/software/DEM/3rdlib/boost159/lib/libboost_serialization.so/home/sway/software/DEM/3rdlib/boost159/lib/libboost_system.so/home/sway/software/DEM/3rdlib/boost159/lib/libboos#t_date_time.so/usr/lib/x86_64-linux-gnu/libpthread.so")
@@ -156,7 +157,7 @@ SET(DISABLED_FEATS "")
 
 OPTION(NOSUFFIX "NOSUFFIX" ON)
 OPTION(ENABLE_VTK "Enable VTK" ${DEFAULT})
-OPTION(ENABLE_OPENMP "Enable OpenMP" ${DEFAULT})
+OPTION(ENABLE_OPENMP "Enable OpenMP" OFF)
 OPTION(ENABLE_GUI "Enable GUI" ${DEFAULT})
 
 IF (CLUSTER)
@@ -164,10 +165,12 @@ SET (ENABLE_GUI OFF)
 ENDIF (CLUSTER)
 #===========================================================
 # Use Eigen3 by default
-# Use Eigen3 by default
+
 #IF (EIGEN3_FOUND)
 #set(EIGEN3_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../3rdlib/eigen-3.2.3/")
-set(EIGEN3_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/")
+
+set(EIGEN3_INCLUDE_DIR "/home/liang/software/eigen/install/include/eigen3/")
+#FIND_PACKAGE(Eigen3 REQUIRED)
   INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
   MESSAGE(STATUS "Found Eigen3, at: ${EIGEN3_INCLUDE_DIR}")
 
@@ -208,7 +211,7 @@ ELSE(ENABLE_OPENMP)
 ENDIF(ENABLE_OPENMP)
 #===========================================================
 IF(ENABLE_GUI)
-  FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtOpenGL)
+  FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtOpenGL) 
   FIND_PACKAGE(OpenGL)
   FIND_PACKAGE(GLUT)
 

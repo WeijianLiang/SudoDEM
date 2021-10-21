@@ -1,3 +1,71 @@
+############################################################################
+#Install on Ubuntu
+#The install procedure includes two parts: compilation of the 3rd-party libraries and the main program. Get the latest source code from the repo (https://github.com/SudoDEM/SudoDEM).
+
+1. Lazy compilation with bash scripts
+  1.1 3rd-party libraries
+    Run the script `install3rdlibs.sh' under the folder `scripts'.
+  1.2 main program
+    Run the script `firstCompile.sh' under the folder `scripts'.
+2. Step-by-steo cimplilation 
+#1. Basic dependencies
+sudo apt install build-essential cmake freeglut3-dev zlib1g-dev python-dev qt4-default libbz2-dev libxi-dev libglib2.0-dev libxmu-dev
+
+#2. Python modules
+sudo apt install python-numpy python-tk python-xlib python-qt4 
+#we need ipython with version 3.0. 'apt install' will install a version 5.0 that is not compatible with SudoDEM at present. We may fix it in the future. As a workaround, we just copy a pakcage of v3.0 to the library path '3rdlibs/py/'.
+
+#3. Boost
+wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz
+tar xaf boost_1_67_0.tar.gz
+cd boost_1_67_0
+./bootstrap.sh  --with-libraries=python,thread,filesystem,iostreams,regex,serialization,system,date_time link=shared runtime-link=shared --without-icu 
+./b2 −j3
+./b2 install --prefix=$PWD/../HeaderLib
+
+#4. Minieigen
+#get the eigen source first
+wget http://bitbucket.org/eigen/eigen/get/3.3.5.tar.bz2
+tar xaf 3.3.5.tar.bz2
+mv eigen-eigen-b3f3d4950030 Eigen-3.3.5
+#get the minieigen source
+wget https://github.com/SwaySZ/minieigen/archive/minieigen-1.0.tar.gz
+tar xaf minieigen-1.0.tar.gz 
+cd minieigen-minieigen-1.0
+mkdir build
+cd build 
+cmake .. -DCMAKE_INSTALL_PREFIX=../../HeaderLib/lib/py
+make
+make install
+
+#5. LibQGLViewer-2.6.3
+wget https://github.com/SwaySZ/libQGLViewer-2.6.3/archive/2.6.3.tar.gz
+cd libQGLViewer-2.6.3-2.6.3/QGLViewer
+qmake 
+make
+
+#cp all dynamic libraries into a folder '3rdlibs'.
+cp -rf HeaderLib/lib 3rdlibs
+mv 3rdlibs/py/lib/minieigen.so 3rdlibs/py/minieigen.so
+
+#6. Compile SudoDEM2D
+mkdir build2d
+cd build2d
+cmake ../SudoDEM2D
+make -j3
+make install
+#the compiled files will be install at `sudodeminstall/SudoDEM2D/'.
+#copy the dynamic files `3rdlibs' into `sudodeminstall/SudoDEM2D/lib/'
+cp -rf 3rdlibs sudodeminstall/SudoDEM2D/lib/
+#make sure to copy IPython pakage into `sudodeminstall/SudoDEM2D/lib/py'.
+
+#7. Set PATH in ~/.bashrc
+#Append the following command into `~/.bashrc'.
+#PATH=${PATH}:/home/xxx/SudoDEM/sudodeminstall/SudoDEM2D/bin
+echo 'PATH=${PATH}:/home/xxx/SudoDEM/sudodeminstall/SudoDEM2D/bin'>> ~/.bashrc
+
+#############################################################################
+
 Prerequisites
 1. CMAKE ---OK (2.8.12.2)
 2. GCC ---OK (4.4.7)
@@ -25,14 +93,9 @@ bcp build predef python thread filesystem iostreams regex serialization system d
 #compile the sublibraries then.
 
 Here are some commands for compiling:
-#cmake -DCMAKE_INSTALL_PREFIX=/nfs/stak/students/z/zhaoshi/Downloads/install /nfs/stak/students/z/zhaoshi/Downloads/trunk-1.11.1 -DINSTALL_PREFIX=/nfs/stak/students/z/zhaoshi/Downloads/install
-cmake -DCMAKE_INSTALL_PREFIX=/nfs/stak/students/z/zhaoshi/Downloads/yadeinstall /nfs/stak/students/z/zhaoshi/Documents/myYADE -DINSTALL_PREFIX=/nfs/stak/students/z/zhaoshi/Downloads/yadeinstall
-cmake -DCMAKE_INSTALL_PREFIX=../../DEMinstall ../SudoDEM -DINSTALL_PREFIX=../../DEMinstall
-cmake -DCMAKE_INSTALL_PREFIX=../SudoDEMgitinstall ../SudoDEMgit -DINSTALL_PREFIX=../SudoDEMgitinstall
-cmake ../SudoDEMgit
+cmake -DINSTALL_PREFIX=/liang/SudoDEM/install
 
 make install
-
 
 The packages need installing including:
 1.Eigen
@@ -44,6 +107,7 @@ The packages need installing including:
 7.python-xlib
 8.tkinter
 9.new version Boost(1.59)
+
 Some MEMO when installing these above packages:
 Prior to starting:
 1.Modify CMakeList.txt.
@@ -54,6 +118,7 @@ Prior to starting:
 	Eigen3 founding just remains INCLUDE_DIRECTORIES($(EIGEN3_INCLUDE_DIR)) and VECTORIZE part, and comment the rest part.
 2.Create a file named .cshrc at home directory due to the tcsh terminal.
 	Add the full paths of python packages and others (e.g., yade installation directory, and bin includes pyrcc4 etc.) to PATH.
+
 Here we go:
 1.Eigen-3.2.3
 	1)Change CMakeList.txt and FindEigen3.cmake. We should specify the exact directory of Eigen3. Caution: using the absolute path.
@@ -64,10 +129,7 @@ Here we go:
 	We added a head file "qglobal.h" in GLViewer.hpp, meanwhile, we replaced "float" with "qreal".
 	In GLViewer.hpp, the three headfiles (qglviewer.h, manipulatedFrame.h and constraint.h) should be specified with the full paths.
 	A compilation error may occor if we did not delete "virtual" ahead "ZNear()" at Line 156 in GLViewer.hpp.
-	Generate img_rc.py and ui_controller.py using commands pyrcc4 and pyuic4, respectively (see the Makefile in gui under build. I do not
-	know why the two commands aren't be executed when building.). Note: pyrcc4 and pyuic4 are included in PyQt4-devel. Copy both files into build after generated.
-
-
+	Generate img_rc.py and ui_controller.py using commands pyrcc4 and pyuic4, respectively, depend on ptqt4-dev-tool
 	Under the directory QGLViewer of libQGLViewer:
 	Replace "qreal" with "float" ahead zNear() at Line 231 in camera.h.
 
@@ -78,5 +140,16 @@ Here we go:
 	Modify setup.py with the full path of Eigen3 used.
 	Excute the command python install setup.py --user, thereby installing into user's home.
 
-5.PYQt4, PyQt4-devel, python-xlib, and tkinter
-  These packages are installed by extracting their RPMs then put the files into the right places.
+5.PyQt4, PyQt4-devel, python-xlib, and tkinter
+	sudo apt install python-qt4 python-qt4-dev qt4-default pyqt4-dev-tools
+
+
+
+
+
+
+
+
+
+
+

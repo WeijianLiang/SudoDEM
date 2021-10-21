@@ -142,8 +142,8 @@ void PeriTriaxController::action()
 	//cout<<"allok?"<<allOk<<endl;
 	if(allOk){
 		if(doUpdate || currUnbalanced<0){
-			currUnbalanced=Shop::unbalancedForce(/*useMaxForce=*/false,scene);
-			cout<<"Stress/strain="<< (stressMask&1?stress[0]:strain[0]) <<"," <<(stressMask&2?stress[1]:strain[1])<<"," <<", goal="<<goal<<", unbalanced="<<currUnbalanced<<endl;;}
+			currUnbalanced=Shop::unbalancedForce(/*useMaxForce=*/false,scene);}
+			// cout<<"Stress or strain="<< (stressMask&1?stress[0]:strain[0]) <<"," <<(stressMask&2?stress[1]:strain[1])<<"," <<" Goal="<<goal<<" unbalanced="<<currUnbalanced<<endl;}
 		if(currUnbalanced<maxUnbalanced){
 			// LOG_INFO("Goal reached, packing stable.");
 			if (!doneHook.empty()){

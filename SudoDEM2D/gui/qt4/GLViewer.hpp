@@ -153,7 +153,7 @@ class SudoDEMCamera : public qglviewer::Camera
 		float cuttingDistance;
         public :
 		SudoDEMCamera():cuttingDistance(0){};
-		 float zNear() const;
+		 qreal zNear() const;
 		virtual void setCuttingDistance(float s){cuttingDistance=s;};
 };
 
